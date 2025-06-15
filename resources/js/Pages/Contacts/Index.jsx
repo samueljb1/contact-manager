@@ -10,6 +10,15 @@ export default function Index() {
 
             <div className="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+
+                    {/*Enlace para crear nuevo contacto */}
+                    <Link
+                        href={route('contacts.create')}
+                        className="bg-green-600 text-white px-4 py-2 rounded mb-4 inline-block"
+                    >
+                        + New Contact
+                    </Link>
+
                     <table className="w-full">
                         <thead>
                             <tr>
@@ -33,3 +42,4 @@ export default function Index() {
         </AuthenticatedLayout>
     );
 }
+
