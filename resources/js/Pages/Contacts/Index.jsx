@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 
 export default function Index() {
-    const { contacts } = usePage().props;
+    const { contacts, provinces } = usePage().props; // <-- agregamos provinces aquí
     const [province, setProvince] = useState('');
 
     const exportToCsv = () => {
@@ -27,17 +27,18 @@ export default function Index() {
                             + New Contact
                         </Link>
 
-                        {/* Select de provincias */}
+                        {/* Select dinámico de provincias */}
                         <select
                             className="border rounded px-3 py-2"
                             value={province}
                             onChange={(e) => setProvince(e.target.value)}
                         >
                             <option value="">-- All Provinces --</option>
-                            <option value="Santo Domingo">Santo Domingo</option>
-                            <option value="Santiago">Santiago</option>
-                            <option value="La Vega">La Vega</option>
-                            {/* Agrega más provincias si quieres */}
+                            {provinces.map((prov) => (
+                                <option key={prov} value={prov}>
+                                    {prov}
+                                </option>
+                            ))}
                         </select>
 
                         {/* Botón para exportar CSV */}
