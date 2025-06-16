@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 
 export default function Edit({ contact }) {
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, processing, errors } = useForm({
         name: contact.name,
         province: contact.province,
         city: contact.city,
@@ -34,6 +34,7 @@ export default function Edit({ contact }) {
 
             <div className="py-6 max-w-2xl mx-auto sm:px-6 lg:px-8">
                 <form onSubmit={submit} className="bg-white p-6 rounded shadow">
+                    {/* Name */}
                     <div className="mb-4">
                         <label className="block text-gray-700">Name</label>
                         <input
@@ -45,6 +46,7 @@ export default function Edit({ contact }) {
                         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                     </div>
 
+                    {/* Province */}
                     <div className="mb-4">
                         <label className="block text-gray-700">Province</label>
                         <input
@@ -56,6 +58,7 @@ export default function Edit({ contact }) {
                         {errors.province && <p className="text-red-500 text-sm mt-1">{errors.province}</p>}
                     </div>
 
+                    {/* City */}
                     <div className="mb-4">
                         <label className="block text-gray-700">City</label>
                         <input

@@ -45,6 +45,14 @@ export default function Index() {
     };
 
     const saveEdit = (contact) => {
+        if (
+            editForm.name.trim() === '' ||
+            editForm.province.trim() === '' ||
+            editForm.city.trim() === ''
+        ) {
+            return; // Evita enviar datos vacíos
+        }
+
         router.visit(route('contacts.update', { contact: contact.id }), {
             method: 'post',
             data: {
@@ -168,26 +176,50 @@ export default function Index() {
                                                 <input
                                                     value={editForm.name}
                                                     onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                                                    className="border px-2 py-1"
+                                                    className={`border px-2 py-1 rounded w-full ${editForm.name === '' ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
+                                                {editForm.name === '' && (
+                                                    <p className="text-red-500 text-sm mt-1">Name is required.</p>
+                                                )}
                                             </td>
                                             <td>
                                                 <input
                                                     value={editForm.province}
                                                     onChange={e => setEditForm({ ...editForm, province: e.target.value })}
-                                                    className="border px-2 py-1"
+                                                    className={`border px-2 py-1 rounded w-full ${editForm.province === '' ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
+                                                {editForm.province === '' && (
+                                                    <p className="text-red-500 text-sm mt-1">Province is required.</p>
+                                                )}
                                             </td>
                                             <td>
                                                 <input
                                                     value={editForm.city}
                                                     onChange={e => setEditForm({ ...editForm, city: e.target.value })}
-                                                    className="border px-2 py-1"
+                                                    className={`border px-2 py-1 rounded w-full ${editForm.city === '' ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
+                                                {editForm.city === '' && (
+                                                    <p className="text-red-500 text-sm mt-1">City is required.</p>
+                                                )}
                                             </td>
                                             <td className="space-x-2">
-                                                <button onClick={() => saveEdit(contact)} className="text-green-600 hover:underline">Save</button>
-                                                <button onClick={() => setEditingId(null)} className="text-gray-600 hover:underline">Cancel</button>
+                                                <button
+                                                    onClick={() => saveEdit(contact)}
+                                                    className="text-green-600 hover:underline"
+                                                    disabled={
+                                                        editForm.name.trim() === '' ||
+                                                        editForm.province.trim() === '' ||
+                                                        editForm.city.trim() === ''
+                                                    }
+                                                >
+                                                    Save
+                                                </button>
+                                                <button
+                                                    onClick={() => setEditingId(null)}
+                                                    className="text-gray-600 hover:underline"
+                                                >
+                                                    Cancel
+                                                </button>
                                             </td>
                                         </>
                                     ) : (
@@ -196,7 +228,12 @@ export default function Index() {
                                             <td className="py-2">{contact.province}</td>
                                             <td className="py-2">{contact.city}</td>
                                             <td className="py-2 space-x-2">
-                                                <button onClick={() => startEdit(contact)} className="text-blue-600 hover:underline">Edit</button>
+                                                <button
+                                                    onClick={() => startEdit(contact)}
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    Edit
+                                                </button>
                                                 <button
                                                     onClick={() => deleteContact(contact.id)}
                                                     className="text-red-600 hover:underline"
