@@ -1,8 +1,15 @@
+import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 
 export default function Index() {
     const { contacts } = usePage().props;
+    const [province, setProvince] = useState('');
+
+    const exportToCsv = () => {
+        const query = province ? `?province=${encodeURIComponent(province)}` : '';
+        window.open(route('contacts.export') + query, '_blank');
+    };
 
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800">Contacts</h2>}>
@@ -10,13 +17,37 @@ export default function Index() {
 
             <div className="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    {/* Enlace para crear un nuevo contacto */}
-                    <Link
-                        href={route('contacts.create')}
-                        className="bg-green-600 text-white px-4 py-2 rounded mb-4 inline-block"
-                    >
-                        + New Contact
-                    </Link>
+
+                    {/* Enlaces y filtros */}
+                    <div className="mb-4 flex space-x-4 items-center">
+                        <Link
+                            href={route('contacts.create')}
+                            className="bg-green-600 text-white px-4 py-2 rounded"
+                        >
+                            + New Contact
+                        </Link>
+
+                        {/* Select de provincias */}
+                        <select
+                            className="border rounded px-3 py-2"
+                            value={province}
+                            onChange={(e) => setProvince(e.target.value)}
+                        >
+                            <option value="">-- All Provinces --</option>
+                            <option value="Santo Domingo">Santo Domingo</option>
+                            <option value="Santiago">Santiago</option>
+                            <option value="La Vega">La Vega</option>
+                            {/* Agrega más provincias si quieres */}
+                        </select>
+
+                        {/* Botón para exportar CSV */}
+                        <button
+                            onClick={exportToCsv}
+                            className="bg-blue-600 text-white px-4 py-2 rounded"
+                        >
+                            Export to CSV
+                        </button>
+                    </div>
 
                     {/* Tabla de contactos */}
                     <table className="w-full">
@@ -25,7 +56,7 @@ export default function Index() {
                                 <th className="text-left">Name</th>
                                 <th className="text-left">Province</th>
                                 <th className="text-left">City</th>
-                                <th className="text-left">Actions</th> {/* Nueva columna para las acciones */}
+                                <th className="text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -48,16 +79,16 @@ export default function Index() {
                                             onClick={() => {
                                                 if (confirm('Are you sure you want to delete this contact?')) {
                                                     router.visit(`/contacts/${contact.id}`, {
-                                                    method: 'post',
-                                                    data: {
-                                                    _method: 'delete', // Laravel lo interpretará como DELETE
-                                                },
-                                                  onSuccess: () => {
-                                                  alert('Contact deleted successfully!');
+                                                        method: 'post',
+                                                        data: {
+                                                            _method: 'delete',
                                                         },
-                                                     onError: () => {
-                                                      alert('Error deleting contact.');
-                                                      },
+                                                        onSuccess: () => {
+                                                            alert('Contact deleted successfully!');
+                                                        },
+                                                        onError: () => {
+                                                            alert('Error deleting contact.');
+                                                        },
                                                     });
                                                 }
                                             }}
@@ -75,4 +106,3 @@ export default function Index() {
         </AuthenticatedLayout>
     );
 }
-

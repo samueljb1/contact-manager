@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContactController extends Controller
 {
@@ -66,5 +67,37 @@ class ContactController extends Controller
         $contact->delete();
 
         return redirect()->route('contacts.index')->with('success', 'Contact deleted.');
+    }
+
+    // Exporta los contactos en formato CSV con opción a filtrar por provincia
+    public function export(Request $request): StreamedResponse
+    {
+        $filename = 'contacts.csv';
+
+        return response()->streamDownload(function () use ($request) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['ID', 'Name', 'Province', 'City', 'Created At']);
+
+            $query = Contact::query();
+
+            // Filtrar por provincia si se pasa parámetro
+            if ($request->has('province') && $request->province !== '') {
+                $query->where('province', $request->province);
+            }
+
+            foreach ($query->get() as $contact) {
+                fputcsv($handle, [
+                    $contact->id,
+                    $contact->name,
+                    $contact->province,
+                    $contact->city,
+                    $contact->created_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
     }
 }
