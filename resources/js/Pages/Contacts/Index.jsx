@@ -9,7 +9,9 @@ export default function Index() {
     const [search, setSearch] = useState(filters.search || '');
     const [flash, setFlash] = useState(initialFlash);
 
-    // Ejecuta el filtro automáticamente cuando cambian los valores
+    const [editingId, setEditingId] = useState(null);
+    const [editForm, setEditForm] = useState({ name: '', province: '', city: '' });
+
     useEffect(() => {
         router.get(route('contacts.index'), {
             province,
@@ -20,7 +22,6 @@ export default function Index() {
         });
     }, [province, search]);
 
-    // Ocultar mensaje flash después de 4 segundos
     useEffect(() => {
         if (flash?.success || flash?.error) {
             const timer = setTimeout(() => setFlash({}), 4000);
@@ -35,6 +36,55 @@ export default function Index() {
         window.open(`${route('contacts.export')}?${query.toString()}`, '_blank');
     };
 
+    const startEdit = (contact) => {
+        setEditingId(contact.id);
+        setEditForm({
+            name: contact.name,
+            province: contact.province,
+            city: contact.city,
+        });
+    };
+
+    const saveEdit = (contact) => {
+        router.visit(route('contacts.update', { contact: contact.id }), {
+            method: 'post',
+            data: {
+                _method: 'put',
+                name: editForm.name,
+                province: editForm.province,
+                city: editForm.city,
+            },
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditingId(null);
+                setFlash({ success: 'Contact updated successfully.' });
+            },
+            onError: (err) => {
+                alert('Error updating contact.');
+                console.error(err);
+            },
+        });
+    };
+
+    const deleteContact = (id) => {
+        if (confirm('Are you sure you want to delete this contact?')) {
+            router.visit(route('contacts.destroy', { contact: id }), {
+                method: 'post',
+                data: {
+                    _method: 'delete',
+                },
+                preserveScroll: true,
+                onSuccess: () => {
+                    setFlash({ success: 'Contact deleted successfully.' });
+                },
+                onError: (err) => {
+                    alert('Error deleting contact.');
+                    console.error(err);
+                },
+            });
+        }
+    };
+
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800">Contacts</h2>}>
             <Head title="Contacts" />
@@ -42,7 +92,7 @@ export default function Index() {
             <div className="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
-                    {/* Enlaces y filtros */}
+                    {/* Filtros y acciones */}
                     <div className="mb-4 flex flex-wrap gap-4 items-center">
                         <Link
                             href={route('contacts.create')}
@@ -51,7 +101,6 @@ export default function Index() {
                             + New Contact
                         </Link>
 
-                        {/* Campo de búsqueda */}
                         <input
                             type="text"
                             placeholder="Search by name"
@@ -60,7 +109,6 @@ export default function Index() {
                             onChange={(e) => setSearch(e.target.value)}
                         />
 
-                        {/* Select dinámico de provincias */}
                         <select
                             className="border rounded px-3 py-2"
                             value={province}
@@ -68,13 +116,10 @@ export default function Index() {
                         >
                             <option value="">-- All Provinces --</option>
                             {provinces.map((prov) => (
-                                <option key={prov} value={prov}>
-                                    {prov}
-                                </option>
+                                <option key={prov} value={prov}>{prov}</option>
                             ))}
                         </select>
 
-                        {/* Botón para limpiar filtros */}
                         <button
                             onClick={() => {
                                 setProvince('');
@@ -85,7 +130,6 @@ export default function Index() {
                             Clear Filters
                         </button>
 
-                        {/* Botón para exportar CSV */}
                         <button
                             onClick={exportToCsv}
                             className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -94,7 +138,7 @@ export default function Index() {
                         </button>
                     </div>
 
-                    {/* Mensajes Flash */}
+                    {/* Flash messages */}
                     {flash?.success && (
                         <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded">
                             {flash.success}
@@ -106,7 +150,7 @@ export default function Index() {
                         </div>
                     )}
 
-                    {/* Tabla de contactos */}
+                    {/* Tabla de contactos con edición inline */}
                     <table className="w-full">
                         <thead>
                             <tr>
@@ -119,38 +163,50 @@ export default function Index() {
                         <tbody>
                             {contacts.data.map((contact) => (
                                 <tr key={contact.id}>
-                                    <td className="py-2">{contact.name}</td>
-                                    <td className="py-2">{contact.province}</td>
-                                    <td className="py-2">{contact.city}</td>
-                                    <td className="py-2 space-x-2">
-                                        <Link
-                                            href={route('contacts.edit', contact.id)}
-                                            className="text-blue-600 hover:underline"
-                                        >
-                                            Edit
-                                        </Link>
-                                        <button
-                                            onClick={() => {
-                                                if (confirm('Are you sure you want to delete this contact?')) {
-                                                    router.visit(`/contacts/${contact.id}`, {
-                                                        method: 'post',
-                                                        data: {
-                                                            _method: 'delete',
-                                                        },
-                                                        onSuccess: () => {
-                                                            alert('Contact deleted successfully!');
-                                                        },
-                                                        onError: () => {
-                                                            alert('Error deleting contact.');
-                                                        },
-                                                    });
-                                                }
-                                            }}
-                                            className="text-red-600 hover:underline"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
+                                    {editingId === contact.id ? (
+                                        <>
+                                            <td>
+                                                <input
+                                                    value={editForm.name}
+                                                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                                    className="border px-2 py-1"
+                                                />
+                                            </td>
+                                            <td>
+                                                <input
+                                                    value={editForm.province}
+                                                    onChange={e => setEditForm({ ...editForm, province: e.target.value })}
+                                                    className="border px-2 py-1"
+                                                />
+                                            </td>
+                                            <td>
+                                                <input
+                                                    value={editForm.city}
+                                                    onChange={e => setEditForm({ ...editForm, city: e.target.value })}
+                                                    className="border px-2 py-1"
+                                                />
+                                            </td>
+                                            <td className="space-x-2">
+                                                <button onClick={() => saveEdit(contact)} className="text-green-600 hover:underline">Save</button>
+                                                <button onClick={() => setEditingId(null)} className="text-gray-600 hover:underline">Cancel</button>
+                                            </td>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <td className="py-2">{contact.name}</td>
+                                            <td className="py-2">{contact.province}</td>
+                                            <td className="py-2">{contact.city}</td>
+                                            <td className="py-2 space-x-2">
+                                                <button onClick={() => startEdit(contact)} className="text-blue-600 hover:underline">Edit</button>
+                                                <button
+                                                    onClick={() => deleteContact(contact.id)}
+                                                    className="text-red-600 hover:underline"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
@@ -172,10 +228,8 @@ export default function Index() {
                             />
                         ))}
                     </div>
-
                 </div>
             </div>
         </AuthenticatedLayout>
     );
 }
-
