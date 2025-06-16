@@ -2,7 +2,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 
 export default function Edit({ contact }) {
-    console.log('Contact prop:', contact);
     const { data, setData, put, processing, errors } = useForm({
         name: contact.name,
         province: contact.province,
@@ -12,23 +11,22 @@ export default function Edit({ contact }) {
     const submit = (e) => {
         e.preventDefault();
 
-        // Usa route() para generar la URL de forma dinámica
         router.visit(`/contacts/${contact.id}`, {
-        method: 'post',
-        data: {
-            _method: 'put', // Laravel lo convertirá en PUT
-            name: data.name,
-            province: data.province,
-            city: data.city,
-        },
-        onSuccess: () => {
-            alert('Contact updated successfully!');
-        },
-        onError: () => {
-            alert('Error updating contact.');
-        },
-    });
-};
+            method: 'post',
+            data: {
+                _method: 'put',
+                name: data.name,
+                province: data.province,
+                city: data.city,
+            },
+            onSuccess: () => {
+                alert('Contact updated successfully!');
+            },
+            onError: () => {
+                alert('Error updating contact.');
+            },
+        });
+    };
 
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800">Edit Contact</h2>}>
@@ -40,33 +38,33 @@ export default function Edit({ contact }) {
                         <label className="block text-gray-700">Name</label>
                         <input
                             type="text"
-                            className="w-full border p-2"
+                            className={`w-full border p-2 rounded ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                         />
-                        {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+                        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                     </div>
 
                     <div className="mb-4">
                         <label className="block text-gray-700">Province</label>
                         <input
                             type="text"
-                            className="w-full border p-2"
+                            className={`w-full border p-2 rounded ${errors.province ? 'border-red-500' : 'border-gray-300'}`}
                             value={data.province}
                             onChange={(e) => setData('province', e.target.value)}
                         />
-                        {errors.province && <p className="text-red-500 text-sm">{errors.province}</p>}
+                        {errors.province && <p className="text-red-500 text-sm mt-1">{errors.province}</p>}
                     </div>
 
                     <div className="mb-4">
                         <label className="block text-gray-700">City</label>
                         <input
                             type="text"
-                            className="w-full border p-2"
+                            className={`w-full border p-2 rounded ${errors.city ? 'border-red-500' : 'border-gray-300'}`}
                             value={data.city}
                             onChange={(e) => setData('city', e.target.value)}
                         />
-                        {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
+                        {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
                     </div>
 
                     <button
@@ -81,4 +79,3 @@ export default function Edit({ contact }) {
         </AuthenticatedLayout>
     );
 }
-
