@@ -9,10 +9,16 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContactController extends Controller
 {
-    // Mostrar lista de contactos junto con provincias únicas
-    public function index()
+    // Mostrar lista de contactos junto con provincias únicas, filtrado por provincia si se pasa
+    public function index(Request $request)
     {
-        $contacts = Contact::latest()->paginate(10);
+        $query = Contact::query();
+
+        if ($request->filled('province')) {
+            $query->where('province', $request->province);
+        }
+
+        $contacts = $query->latest()->paginate(10)->withQueryString();
 
         $provinces = Contact::select('province')
             ->distinct()
@@ -22,6 +28,7 @@ class ContactController extends Controller
         return Inertia::render('Contacts/Index', [
             'contacts' => $contacts,
             'provinces' => $provinces,
+            'filters' => $request->only('province'),
         ]);
     }
 
