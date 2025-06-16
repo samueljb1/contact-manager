@@ -1,10 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 
 export default function Index() {
-    const { contacts, provinces } = usePage().props; // <-- agregamos provinces aquí
-    const [province, setProvince] = useState('');
+    const { contacts, provinces, filters } = usePage().props;
+    const [province, setProvince] = useState(filters.province || '');
+
+    // Cuando el usuario cambia la provincia, se recarga la tabla filtrada
+    useEffect(() => {
+        router.get(route('contacts.index'), { province }, {
+            preserveState: true,
+            replace: true,
+        });
+    }, [province]);
 
     const exportToCsv = () => {
         const query = province ? `?province=${encodeURIComponent(province)}` : '';
@@ -40,6 +48,14 @@ export default function Index() {
                                 </option>
                             ))}
                         </select>
+
+                        {/* Botón para limpiar filtro */}
+                        <button
+                            onClick={() => setProvince('')}
+                            className="text-sm text-blue-600 underline"
+                        >
+                            Clear Filters
+                        </button>
 
                         {/* Botón para exportar CSV */}
                         <button
@@ -102,6 +118,7 @@ export default function Index() {
                             ))}
                         </tbody>
                     </table>
+
                 </div>
             </div>
         </AuthenticatedLayout>
