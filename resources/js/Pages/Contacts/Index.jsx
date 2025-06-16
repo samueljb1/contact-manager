@@ -12,11 +12,10 @@ export default function Index() {
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({ name: '', province: '', city: '' });
 
+    const params = { province, search };
+
     useEffect(() => {
-        router.get(route('contacts.index'), {
-            province,
-            search,
-        }, {
+        router.get(route('contacts.index'), params, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -218,7 +217,14 @@ export default function Index() {
                             <button
                                 key={i}
                                 disabled={!link.url}
-                                onClick={() => link.url && router.visit(link.url)}
+                                onClick={() =>
+                                    link.url &&
+                                    router.visit(link.url, {
+                                        preserveScroll: true,
+                                        preserveState: true,
+                                        data: params,
+                                    })
+                                }
                                 className={`px-3 py-1 border rounded text-sm ${
                                     link.active
                                         ? 'bg-blue-600 text-white'
