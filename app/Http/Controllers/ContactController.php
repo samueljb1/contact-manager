@@ -9,13 +9,18 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContactController extends Controller
 {
-    // Mostrar lista de contactos junto con provincias únicas, filtrado por provincia si se pasa
+    // Mostrar lista de contactos con filtro por provincia y búsqueda por nombre
     public function index(Request $request)
     {
         $query = Contact::query();
 
         if ($request->filled('province')) {
             $query->where('province', $request->province);
+        }
+
+        // Búsqueda insensible a mayúsculas (solo funciona en PostgreSQL)
+        if ($request->filled('search')) {
+            $query->where('name', 'ILIKE', '%' . $request->search . '%');
         }
 
         $contacts = $query->latest()->paginate(10)->withQueryString();
@@ -28,7 +33,7 @@ class ContactController extends Controller
         return Inertia::render('Contacts/Index', [
             'contacts' => $contacts,
             'provinces' => $provinces,
-            'filters' => $request->only('province'),
+            'filters' => $request->only(['province', 'search']),
         ]);
     }
 
@@ -82,7 +87,7 @@ class ContactController extends Controller
         return redirect()->route('contacts.index')->with('success', 'Contact deleted.');
     }
 
-    // Exporta los contactos en formato CSV con opción a filtrar por provincia
+    // Exporta los contactos en formato CSV con opción a filtrar por provincia y búsqueda
     public function export(Request $request): StreamedResponse
     {
         $filename = 'contacts.csv';
@@ -93,9 +98,13 @@ class ContactController extends Controller
 
             $query = Contact::query();
 
-            // Filtrar por provincia si se pasa parámetro
-            if ($request->has('province') && $request->province !== '') {
+            if ($request->filled('province')) {
                 $query->where('province', $request->province);
+            }
+
+            // También insensible a mayúsculas en la exportación
+            if ($request->filled('search')) {
+                $query->where('name', 'ILIKE', '%' . $request->search . '%');
             }
 
             foreach ($query->get() as $contact) {
