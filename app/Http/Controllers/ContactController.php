@@ -8,6 +8,7 @@ use Inertia\Inertia;
 
 class ContactController extends Controller
 {
+    // Mostrar lista de contactos
     public function index()
     {
         $contacts = Contact::latest()->paginate(10);
@@ -67,4 +68,3 @@ class ContactController extends Controller
         return redirect()->route('contacts.index')->with('success', 'Contact deleted.');
     }
 }
-

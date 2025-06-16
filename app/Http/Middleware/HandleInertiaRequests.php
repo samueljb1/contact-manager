@@ -36,4 +36,23 @@ class HandleInertiaRequests extends Middleware
             ],
         ];
     }
+
+    /**
+     * Handle the incoming request.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
+     * @return mixed
+     */
+    public function handle($request, \Closure $next)
+    {
+        // Verifica si el método es POST y contiene el parámetro _method
+        if ($request->method() === 'POST' && $request->has('_method')) {
+            // Cambia el método HTTP de la solicitud
+            $request->setMethod($request->input('_method'));
+        }
+
+        return $next($request);
+    }
 }
+

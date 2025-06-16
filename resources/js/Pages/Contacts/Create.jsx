@@ -10,7 +10,14 @@ export default function Create() {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('contacts.store'));
+        post(route('contacts.store'), {
+            onSuccess: () => {
+                console.log('Created!');
+            },
+            onError: () => {
+                console.log('Error creating contact');
+            },
+        });
     };
 
     return (
@@ -21,20 +28,39 @@ export default function Create() {
                 <form onSubmit={submit} className="bg-white p-6 rounded shadow">
                     <div className="mb-4">
                         <label className="block text-gray-700">Name</label>
-                        <input type="text" className="w-full border p-2" value={data.name} onChange={e => setData('name', e.target.value)} />
+                        <input
+                            type="text"
+                            className="w-full border p-2"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                        />
                         {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700">Province</label>
-                        <input type="text" className="w-full border p-2" value={data.province} onChange={e => setData('province', e.target.value)} />
+                        <input
+                            type="text"
+                            className="w-full border p-2"
+                            value={data.province}
+                            onChange={(e) => setData('province', e.target.value)}
+                        />
                         {errors.province && <p className="text-red-500 text-sm">{errors.province}</p>}
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700">City</label>
-                        <input type="text" className="w-full border p-2" value={data.city} onChange={e => setData('city', e.target.value)} />
+                        <input
+                            type="text"
+                            className="w-full border p-2"
+                            value={data.city}
+                            onChange={(e) => setData('city', e.target.value)}
+                        />
                         {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
                     </div>
-                    <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={processing}>
+                    <button
+                        type="submit"
+                        className="bg-blue-600 text-white px-4 py-2 rounded"
+                        disabled={processing}
+                    >
                         Save Contact
                     </button>
                 </form>
