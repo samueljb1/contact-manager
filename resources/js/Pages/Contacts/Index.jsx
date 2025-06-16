@@ -3,9 +3,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 
 export default function Index() {
-    const { contacts, provinces, filters } = usePage().props;
+    const { contacts, provinces, filters, flash: initialFlash } = usePage().props;
+
     const [province, setProvince] = useState(filters.province || '');
     const [search, setSearch] = useState(filters.search || '');
+    const [flash, setFlash] = useState(initialFlash);
 
     // Ejecuta el filtro automáticamente cuando cambian los valores
     useEffect(() => {
@@ -17,6 +19,14 @@ export default function Index() {
             preserveScroll: true,
         });
     }, [province, search]);
+
+    // Ocultar mensaje flash después de 4 segundos
+    useEffect(() => {
+        if (flash?.success || flash?.error) {
+            const timer = setTimeout(() => setFlash({}), 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [flash]);
 
     const exportToCsv = () => {
         const query = new URLSearchParams();
@@ -41,6 +51,15 @@ export default function Index() {
                             + New Contact
                         </Link>
 
+                        {/* Campo de búsqueda */}
+                        <input
+                            type="text"
+                            placeholder="Search by name"
+                            className="border rounded px-3 py-2"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+
                         {/* Select dinámico de provincias */}
                         <select
                             className="border rounded px-3 py-2"
@@ -54,15 +73,6 @@ export default function Index() {
                                 </option>
                             ))}
                         </select>
-
-                        {/* Campo de búsqueda */}
-                        <input
-                            type="text"
-                            placeholder="Search by name"
-                            className="border rounded px-3 py-2"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
 
                         {/* Botón para limpiar filtros */}
                         <button
@@ -83,6 +93,18 @@ export default function Index() {
                             Export to CSV
                         </button>
                     </div>
+
+                    {/* Mensajes Flash */}
+                    {flash?.success && (
+                        <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded">
+                            {flash.success}
+                        </div>
+                    )}
+                    {flash?.error && (
+                        <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+                            {flash.error}
+                        </div>
+                    )}
 
                     {/* Tabla de contactos */}
                     <table className="w-full">
@@ -156,3 +178,4 @@ export default function Index() {
         </AuthenticatedLayout>
     );
 }
+
