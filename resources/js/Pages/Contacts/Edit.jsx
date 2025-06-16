@@ -1,7 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 
 export default function Edit({ contact }) {
+    console.log('Contact prop:', contact);
     const { data, setData, put, processing, errors } = useForm({
         name: contact.name,
         province: contact.province,
@@ -12,15 +13,22 @@ export default function Edit({ contact }) {
         e.preventDefault();
 
         // Usa route() para generar la URL de forma dinámica
-        put(route('contacts.update', contact.id), {
-            onSuccess: () => {
-                console.log('Updated!');
-            },
-            onError: () => {
-                console.log('Error updating contact');
-            },
-        });
-    };
+        router.visit(`/contacts/${contact.id}`, {
+        method: 'post',
+        data: {
+            _method: 'put', // Laravel lo convertirá en PUT
+            name: data.name,
+            province: data.province,
+            city: data.city,
+        },
+        onSuccess: () => {
+            alert('Contact updated successfully!');
+        },
+        onError: () => {
+            alert('Error updating contact.');
+        },
+    });
+};
 
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800">Edit Contact</h2>}>

@@ -47,17 +47,17 @@ export default function Index() {
                                         <button
                                             onClick={() => {
                                                 if (confirm('Are you sure you want to delete this contact?')) {
-                                                    router.delete(`/contacts/${contact.id}`, {
-                                                        onSuccess: () => {
-                                                            // Al eliminar con éxito, muestra el mensaje
-                                                            alert('Contact deleted successfully!');
-                                                            // Redirigir o actualizar la página si es necesario
-                                                            // Inertia.visit(route('contacts.index'));
+                                                    router.visit(`/contacts/${contact.id}`, {
+                                                    method: 'post',
+                                                    data: {
+                                                    _method: 'delete', // Laravel lo interpretará como DELETE
+                                                },
+                                                  onSuccess: () => {
+                                                  alert('Contact deleted successfully!');
                                                         },
-                                                        onError: () => {
-                                                            // Si ocurre un error, muestra el mensaje
-                                                            alert('Error deleting contact. Please try again.');
-                                                        }
+                                                     onError: () => {
+                                                      alert('Error deleting contact.');
+                                                      },
                                                     });
                                                 }
                                             }}
