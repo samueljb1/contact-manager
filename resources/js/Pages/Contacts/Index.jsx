@@ -6,11 +6,11 @@ export default function Index() {
     const { contacts, provinces, filters } = usePage().props;
     const [province, setProvince] = useState(filters.province || '');
 
-    // Cuando el usuario cambia la provincia, se recarga la tabla filtrada
+    // Cuando el usuario cambia la provincia, se recarga la tabla filtrada y actualiza URL
     useEffect(() => {
         router.get(route('contacts.index'), { province }, {
             preserveState: true,
-            replace: true,
+            preserveScroll: true,
         });
     }, [province]);
 
