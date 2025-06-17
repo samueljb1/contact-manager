@@ -10,7 +10,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Contactos por provincia (ya lo tenías)
+        // Contactos por provincia
         $contactsPerProvince = Contact::select('province', DB::raw('count(*) as total'))
             ->groupBy('province')
             ->orderBy('total', 'desc')
@@ -23,9 +23,17 @@ class DashboardController extends Controller
             ->take(15)
             ->get();
 
+        // KPIs adicionales
+        $totalContacts = Contact::count();
+        $totalProvinces = Contact::distinct('province')->count('province');
+        $totalCities = Contact::distinct('city')->count('city');
+
         return Inertia::render('Dashboard', [
             'contactsPerProvince' => $contactsPerProvince,
             'contactsByDate' => $contactsByDate,
+            'totalContacts' => $totalContacts,
+            'totalProvinces' => $totalProvinces,
+            'totalCities' => $totalCities,
         ]);
     }
 }
