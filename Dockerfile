@@ -1,31 +1,33 @@
-# Imagen oficial PHP con Apache
-FROM php:8.2-apache
+# Usa una imagen base de PHP (usaremos PHP con Nginx y Composer)
+FROM php:8.1-fpm
 
-# Instala dependencias necesarias
+# Instala dependencias necesarias y Composer
 RUN apt-get update && apt-get install -y \
-    git unzip curl zip libzip-dev libpq-dev nodejs npm \
-    && docker-php-ext-install pdo pdo_pgsql zip
-
-# Instala Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libssl-dev \
+    unzip \
+    git \
+    curl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Establece el directorio de trabajo
-WORKDIR /var/www/html
+WORKDIR /var/www
 
-# Copia los archivos de la aplicación
+# Copia los archivos del proyecto
 COPY . .
 
-# Instala dependencias PHP
+# Instala las dependencias de Laravel usando Composer
 RUN composer install --no-dev --optimize-autoloader
 
-# Compila assets
-RUN npm install && npm run build
+# Configura los permisos para Laravel
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Establece permisos correctos para Laravel
-RUN chmod -R 775 storage bootstrap/cache
+# Exponer el puerto 9000 para que Nginx lo pueda usar
+EXPOSE 9000
 
-# Exponer el puerto HTTP
-EXPOSE 80
-
-# Comando para iniciar Laravel
-CMD php artisan migrate --force && apache2-foreground
+# Usa un servidor PHP-FPM para correr la aplicación
+CMD ["php-fpm"]

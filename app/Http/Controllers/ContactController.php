@@ -9,22 +9,40 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContactController extends Controller
 {
-    // Mostrar lista de contactos con filtro por provincia y búsqueda por nombre
+    // Mostrar lista de contactos con filtro por provincia, ciudad, búsqueda por nombre, y fecha
     public function index(Request $request)
     {
         $query = Contact::query();
 
+        // Filtro por provincia
         if ($request->filled('province')) {
             $query->where('province', $request->province);
         }
 
-        // Búsqueda insensible a mayúsculas (solo funciona en PostgreSQL)
+        // Filtro por búsqueda de nombre (insensible a mayúsculas en PostgreSQL)
         if ($request->filled('search')) {
             $query->where('name', 'ILIKE', '%' . $request->search . '%');
         }
 
+        // Filtro por ciudad
+        if ($request->filled('city')) {
+            $query->where('city', 'ILIKE', '%' . $request->city . '%');
+        }
+
+        // Filtro por fecha de inicio
+        if ($request->filled('from')) {
+            $query->whereDate('created_at', '>=', $request->from);
+        }
+
+        // Filtro por fecha de fin
+        if ($request->filled('to')) {
+            $query->whereDate('created_at', '<=', $request->to);
+        }
+
+        // Obtener los contactos con la paginación
         $contacts = $query->latest()->paginate(10)->withQueryString();
 
+        // Obtener las provincias disponibles para el filtro
         $provinces = Contact::select('province')
             ->distinct()
             ->orderBy('province')
@@ -33,7 +51,7 @@ class ContactController extends Controller
         return Inertia::render('Contacts/Index', [
             'contacts' => $contacts,
             'provinces' => $provinces,
-            'filters' => $request->only(['province', 'search']),
+            'filters' => $request->only(['search', 'province', 'city', 'from', 'to']),
         ]);
     }
 
@@ -87,7 +105,7 @@ class ContactController extends Controller
         return redirect()->route('contacts.index')->with('success', 'Contact deleted.');
     }
 
-    // Exporta los contactos en formato CSV con opción a filtrar por provincia y búsqueda
+    // Exporta los contactos en formato CSV con opción a filtrar por provincia, búsqueda, ciudad y fechas
     public function export(Request $request): StreamedResponse
     {
         $filename = 'contacts.csv';
@@ -98,13 +116,29 @@ class ContactController extends Controller
 
             $query = Contact::query();
 
+            // Filtro por provincia
             if ($request->filled('province')) {
                 $query->where('province', $request->province);
             }
 
-            // También insensible a mayúsculas en la exportación
+            // Filtro por búsqueda de nombre (insensible a mayúsculas en PostgreSQL)
             if ($request->filled('search')) {
                 $query->where('name', 'ILIKE', '%' . $request->search . '%');
+            }
+
+            // Filtro por ciudad
+            if ($request->filled('city')) {
+                $query->where('city', 'ILIKE', '%' . $request->city . '%');
+            }
+
+            // Filtro por fecha de inicio
+            if ($request->filled('from')) {
+                $query->whereDate('created_at', '>=', $request->from);
+            }
+
+            // Filtro por fecha de fin
+            if ($request->filled('to')) {
+                $query->whereDate('created_at', '<=', $request->to);
             }
 
             foreach ($query->get() as $contact) {

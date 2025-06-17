@@ -7,22 +7,25 @@ export default function Index() {
 
     const [province, setProvince] = useState(filters.province || '');
     const [search, setSearch] = useState(filters.search || '');
+    const [city, setCity] = useState(filters.city || '');
+    const [from, setFrom] = useState(filters.from || '');
+    const [to, setTo] = useState(filters.to || '');
     const [flash, setFlash] = useState(initialFlash);
 
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({ name: '', province: '', city: '' });
 
-    const params = { province, search };
+    const params = { search, province, city, from, to };
 
-    // Encapsulado para prevenir error de Inertia versión
     useEffect(() => {
         if (typeof window !== 'undefined') {
             router.get(route('contacts.index'), params, {
                 preserveState: true,
                 preserveScroll: true,
+                replace: true,
             });
         }
-    }, [province, search]);
+    }, [search, province, city, from, to]);
 
     useEffect(() => {
         if (flash?.success || flash?.error) {
@@ -32,10 +35,8 @@ export default function Index() {
     }, [flash]);
 
     const exportToCsv = () => {
-        const query = new URLSearchParams();
-        if (province) query.append('province', province);
-        if (search) query.append('search', search);
-        window.open(`${route('contacts.export')}?${query.toString()}`, '_blank');
+        const query = new URLSearchParams(params).toString();
+        window.open(`${route('contacts.export')}?${query}`, '_blank');
     };
 
     const startEdit = (contact) => {
@@ -48,11 +49,7 @@ export default function Index() {
     };
 
     const saveEdit = (contact) => {
-        if (
-            editForm.name.trim() === '' ||
-            editForm.province.trim() === '' ||
-            editForm.city.trim() === ''
-        ) return;
+        if (!editForm.name.trim() || !editForm.province.trim() || !editForm.city.trim()) return;
 
         router.visit(route('contacts.update', { contact: contact.id }), {
             method: 'post',
@@ -86,7 +83,7 @@ export default function Index() {
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex items-center justify-between w-full">
+                <div className="flex justify-between items-center w-full">
                     <h2 className="text-2xl font-bold text-gray-800">Contacts</h2>
                 </div>
             }
@@ -94,10 +91,10 @@ export default function Index() {
             <Head title="Contacts" />
 
             <div className="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div className="bg-white p-6 rounded shadow">
 
-                    {/* Acciones principales: Crear y Exportar */}
-                    <div className="flex justify-end mb-4 space-x-2">
+                    {/* Botones "New Contact" y "Export CSV" encima de los filtros */}
+                    <div className="flex space-x-4 mb-6">
                         <Link
                             href={route('contacts.create')}
                             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition"
@@ -113,33 +110,43 @@ export default function Index() {
                     </div>
 
                     {/* Filtros */}
-                    <div className="mb-4 flex flex-wrap gap-4 items-center">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
                         <input
                             type="text"
-                            placeholder="Search by name"
-                            className="border rounded px-3 py-2"
+                            placeholder="Search name"
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={e => setSearch(e.target.value)}
+                            className="border rounded px-3 py-2 w-full"
                         />
                         <select
-                            className="border rounded px-3 py-2"
                             value={province}
-                            onChange={(e) => setProvince(e.target.value)}
+                            onChange={e => setProvince(e.target.value)}
+                            className="border rounded px-3 py-2 w-full"
                         >
-                            <option value="">-- All Provinces --</option>
-                            {provinces.map((prov) => (
-                                <option key={prov} value={prov}>{prov}</option>
+                            <option value="">All Provinces</option>
+                            {provinces.map((p) => (
+                                <option key={p} value={p}>{p}</option>
                             ))}
                         </select>
-                        <button
-                            onClick={() => {
-                                setProvince('');
-                                setSearch('');
-                            }}
-                            className="text-sm text-blue-600 underline"
-                        >
-                            Clear Filters
-                        </button>
+                        <input
+                            type="text"
+                            placeholder="City"
+                            value={city}
+                            onChange={e => setCity(e.target.value)}
+                            className="border rounded px-3 py-2 w-full"
+                        />
+                        <input
+                            type="date"
+                            value={from}
+                            onChange={e => setFrom(e.target.value)}
+                            className="border rounded px-3 py-2 w-full"
+                        />
+                        <input
+                            type="date"
+                            value={to}
+                            onChange={e => setTo(e.target.value)}
+                            className="border rounded px-3 py-2 w-full"
+                        />
                     </div>
 
                     {/* Flash Messages */}
@@ -169,44 +176,12 @@ export default function Index() {
                                 <tr key={contact.id}>
                                     {editingId === contact.id ? (
                                         <>
+                                            <td><input className="border rounded w-full" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} /></td>
+                                            <td><input className="border rounded w-full" value={editForm.province} onChange={e => setEditForm({ ...editForm, province: e.target.value })} /></td>
+                                            <td><input className="border rounded w-full" value={editForm.city} onChange={e => setEditForm({ ...editForm, city: e.target.value })} /></td>
                                             <td>
-                                                <input
-                                                    value={editForm.name}
-                                                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                                                    className={`border px-2 py-1 rounded w-full ${editForm.name === '' ? 'border-red-500' : 'border-gray-300'}`}
-                                                />
-                                                {editForm.name === '' && <p className="text-red-500 text-sm mt-1">Name is required.</p>}
-                                            </td>
-                                            <td>
-                                                <input
-                                                    value={editForm.province}
-                                                    onChange={e => setEditForm({ ...editForm, province: e.target.value })}
-                                                    className={`border px-2 py-1 rounded w-full ${editForm.province === '' ? 'border-red-500' : 'border-gray-300'}`}
-                                                />
-                                                {editForm.province === '' && <p className="text-red-500 text-sm mt-1">Province is required.</p>}
-                                            </td>
-                                            <td>
-                                                <input
-                                                    value={editForm.city}
-                                                    onChange={e => setEditForm({ ...editForm, city: e.target.value })}
-                                                    className={`border px-2 py-1 rounded w-full ${editForm.city === '' ? 'border-red-500' : 'border-gray-300'}`}
-                                                />
-                                                {editForm.city === '' && <p className="text-red-500 text-sm mt-1">City is required.</p>}
-                                            </td>
-                                            <td className="space-x-2">
-                                                <button
-                                                    onClick={() => saveEdit(contact)}
-                                                    className="text-green-600 hover:underline"
-                                                    disabled={editForm.name.trim() === '' || editForm.province.trim() === '' || editForm.city.trim() === ''}
-                                                >
-                                                    Save
-                                                </button>
-                                                <button
-                                                    onClick={() => setEditingId(null)}
-                                                    className="text-gray-600 hover:underline"
-                                                >
-                                                    Cancel
-                                                </button>
+                                                <button onClick={() => saveEdit(contact)} className="text-green-600 hover:underline">Save</button>
+                                                <button onClick={() => setEditingId(null)} className="text-gray-600 hover:underline ml-2">Cancel</button>
                                             </td>
                                         </>
                                     ) : (
@@ -253,3 +228,5 @@ export default function Index() {
         </AuthenticatedLayout>
     );
 }
+
+
