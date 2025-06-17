@@ -1,33 +1,37 @@
-# Usa una imagen base de PHP 8.4 con FPM
+# Usa la imagen base de PHP-FPM 8.4
 FROM php:8.4-fpm
 
-# Instala dependencias necesarias y Composer
+# Instala dependencias necesarias para Laravel y Nginx
 RUN apt-get update && apt-get install -y \
+    nginx \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libssl-dev \
-    unzip \
-    git \
     curl \
+    git \
+    unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    && curl -sS https://getcomposer.org/installer | php \
+    && mv composer.phar /usr/local/bin/composer
 
-# Establece el directorio de trabajo
+# Configura el directorio de trabajo
 WORKDIR /var/www
 
-# Copia los archivos del proyecto
+# Copia el código de la aplicación al contenedor
 COPY . .
 
-# Instala las dependencias de Laravel usando Composer
+# Instala las dependencias de Composer (Laravel)
 RUN composer install --no-dev --optimize-autoloader
 
-# Configura los permisos para Laravel
+# Copia el archivo de configuración de Nginx
+COPY ./nginx/default.conf /etc/nginx/sites-available/default
+
+# Configura Nginx para escuchar en el puerto 80
+EXPOSE 80
+
+# Configura permisos en las carpetas de Laravel
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Exponer el puerto 9000 para que Nginx lo pueda usar
-EXPOSE 9000
-
-# Usa un servidor PHP-FPM para correr la aplicación
-CMD ["php-fpm"]
+# Inicia Nginx y PHP-FPM
+CMD service nginx start && php-fpm

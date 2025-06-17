@@ -31,6 +31,10 @@ services:
         fromDatabase:
           name: contact-db
           property: password
+    ports:
+      - port: 80
+        targetPort: 80
+
 databases:
   - name: contact-db
     databaseName: contact_manager
