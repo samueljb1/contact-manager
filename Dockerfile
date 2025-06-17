@@ -1,5 +1,5 @@
-# Usa una imagen base de PHP (usaremos PHP con Nginx y Composer)
-FROM php:8.1-fpm
+# Usa una imagen base de PHP 8.4 con FPM
+FROM php:8.4-fpm
 
 # Instala dependencias necesarias y Composer
 RUN apt-get update && apt-get install -y \
