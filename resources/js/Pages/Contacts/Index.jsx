@@ -14,11 +14,14 @@ export default function Index() {
 
     const params = { province, search };
 
+    // Encapsulado para prevenir error de Inertia versión
     useEffect(() => {
-        router.get(route('contacts.index'), params, {
-            preserveState: true,
-            preserveScroll: true,
-        });
+        if (typeof window !== 'undefined') {
+            router.get(route('contacts.index'), params, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }
     }, [province, search]);
 
     useEffect(() => {
@@ -49,9 +52,7 @@ export default function Index() {
             editForm.name.trim() === '' ||
             editForm.province.trim() === '' ||
             editForm.city.trim() === ''
-        ) {
-            return; // Evita enviar datos vacíos
-        }
+        ) return;
 
         router.visit(route('contacts.update', { contact: contact.id }), {
             method: 'post',
@@ -66,10 +67,7 @@ export default function Index() {
                 setEditingId(null);
                 setFlash({ success: 'Contact updated successfully.' });
             },
-            onError: (err) => {
-                alert('Error updating contact.');
-                console.error(err);
-            },
+            onError: () => alert('Error updating contact.'),
         });
     };
 
@@ -77,37 +75,45 @@ export default function Index() {
         if (confirm('Are you sure you want to delete this contact?')) {
             router.visit(route('contacts.destroy', { contact: id }), {
                 method: 'post',
-                data: {
-                    _method: 'delete',
-                },
+                data: { _method: 'delete' },
                 preserveScroll: true,
-                onSuccess: () => {
-                    setFlash({ success: 'Contact deleted successfully.' });
-                },
-                onError: (err) => {
-                    alert('Error deleting contact.');
-                    console.error(err);
-                },
+                onSuccess: () => setFlash({ success: 'Contact deleted successfully.' }),
+                onError: () => alert('Error deleting contact.'),
             });
         }
     };
 
     return (
-        <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800">Contacts</h2>}>
+        <AuthenticatedLayout
+            header={
+                <div className="flex items-center justify-between w-full">
+                    <h2 className="text-2xl font-bold text-gray-800">Contacts</h2>
+                </div>
+            }
+        >
             <Head title="Contacts" />
 
             <div className="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
-                    {/* Filtros y acciones */}
-                    <div className="mb-4 flex flex-wrap gap-4 items-center">
+                    {/* Acciones principales: Crear y Exportar */}
+                    <div className="flex justify-end mb-4 space-x-2">
                         <Link
                             href={route('contacts.create')}
-                            className="bg-green-600 text-white px-4 py-2 rounded"
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition"
                         >
                             + New Contact
                         </Link>
+                        <button
+                            onClick={exportToCsv}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"
+                        >
+                            Export CSV
+                        </button>
+                    </div>
 
+                    {/* Filtros */}
+                    <div className="mb-4 flex flex-wrap gap-4 items-center">
                         <input
                             type="text"
                             placeholder="Search by name"
@@ -115,7 +121,6 @@ export default function Index() {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
-
                         <select
                             className="border rounded px-3 py-2"
                             value={province}
@@ -126,7 +131,6 @@ export default function Index() {
                                 <option key={prov} value={prov}>{prov}</option>
                             ))}
                         </select>
-
                         <button
                             onClick={() => {
                                 setProvince('');
@@ -136,16 +140,9 @@ export default function Index() {
                         >
                             Clear Filters
                         </button>
-
-                        <button
-                            onClick={exportToCsv}
-                            className="bg-blue-600 text-white px-4 py-2 rounded"
-                        >
-                            Export to CSV
-                        </button>
                     </div>
 
-                    {/* Flash messages */}
+                    {/* Flash Messages */}
                     {flash?.success && (
                         <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded">
                             {flash.success}
@@ -157,7 +154,7 @@ export default function Index() {
                         </div>
                     )}
 
-                    {/* Tabla de contactos con edición inline */}
+                    {/* Tabla */}
                     <table className="w-full">
                         <thead>
                             <tr>
@@ -178,9 +175,7 @@ export default function Index() {
                                                     onChange={e => setEditForm({ ...editForm, name: e.target.value })}
                                                     className={`border px-2 py-1 rounded w-full ${editForm.name === '' ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
-                                                {editForm.name === '' && (
-                                                    <p className="text-red-500 text-sm mt-1">Name is required.</p>
-                                                )}
+                                                {editForm.name === '' && <p className="text-red-500 text-sm mt-1">Name is required.</p>}
                                             </td>
                                             <td>
                                                 <input
@@ -188,9 +183,7 @@ export default function Index() {
                                                     onChange={e => setEditForm({ ...editForm, province: e.target.value })}
                                                     className={`border px-2 py-1 rounded w-full ${editForm.province === '' ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
-                                                {editForm.province === '' && (
-                                                    <p className="text-red-500 text-sm mt-1">Province is required.</p>
-                                                )}
+                                                {editForm.province === '' && <p className="text-red-500 text-sm mt-1">Province is required.</p>}
                                             </td>
                                             <td>
                                                 <input
@@ -198,19 +191,13 @@ export default function Index() {
                                                     onChange={e => setEditForm({ ...editForm, city: e.target.value })}
                                                     className={`border px-2 py-1 rounded w-full ${editForm.city === '' ? 'border-red-500' : 'border-gray-300'}`}
                                                 />
-                                                {editForm.city === '' && (
-                                                    <p className="text-red-500 text-sm mt-1">City is required.</p>
-                                                )}
+                                                {editForm.city === '' && <p className="text-red-500 text-sm mt-1">City is required.</p>}
                                             </td>
                                             <td className="space-x-2">
                                                 <button
                                                     onClick={() => saveEdit(contact)}
                                                     className="text-green-600 hover:underline"
-                                                    disabled={
-                                                        editForm.name.trim() === '' ||
-                                                        editForm.province.trim() === '' ||
-                                                        editForm.city.trim() === ''
-                                                    }
+                                                    disabled={editForm.name.trim() === '' || editForm.province.trim() === '' || editForm.city.trim() === ''}
                                                 >
                                                     Save
                                                 </button>
@@ -228,18 +215,8 @@ export default function Index() {
                                             <td className="py-2">{contact.province}</td>
                                             <td className="py-2">{contact.city}</td>
                                             <td className="py-2 space-x-2">
-                                                <button
-                                                    onClick={() => startEdit(contact)}
-                                                    className="text-blue-600 hover:underline"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => deleteContact(contact.id)}
-                                                    className="text-red-600 hover:underline"
-                                                >
-                                                    Delete
-                                                </button>
+                                                <button onClick={() => startEdit(contact)} className="text-blue-600 hover:underline">Edit</button>
+                                                <button onClick={() => deleteContact(contact.id)} className="text-red-600 hover:underline">Delete</button>
                                             </td>
                                         </>
                                     )}
