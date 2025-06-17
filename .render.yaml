@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: contact-manager
+    env: docker
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: contact-db
+          property: host
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        fromDatabase:
+          name: contact-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: contact-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: contact-db
+          property: password
+databases:
+  - name: contact-db
+    databaseName: contact_manager
+    user: samuel_user
+    plan: free
