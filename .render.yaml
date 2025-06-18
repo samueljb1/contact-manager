@@ -7,10 +7,12 @@ services:
     envVars:
       - key: APP_ENV
         value: production
-      - key: APP_DEBUG
-        value: false
       - key: APP_KEY
-        value: base64:Foct5J9KvFYAYSTQXVH0Qg8NJP0aBKvR1++IhD+XnjQ=
+        value: base64:Foct5J9KvFYAYSTQXVH0Og8NJP0aBKvR1++IhD+XnjQ=
+      - key: APP_NAME
+        value: Contact Manager
+      - key: APP_URL
+        value: https://contact-manager-78x4.onrender.com
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
@@ -26,3 +28,9 @@ services:
     ports:
       - port: 80
         targetPort: 80
+
+databases:
+  - name: contact-db
+    databaseName: contact_manager_db_vrp1
+    user: samuel
+    plan: free
