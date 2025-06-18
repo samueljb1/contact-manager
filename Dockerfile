@@ -1,50 +1,31 @@
-# Etapa 1: Build de frontend con Vite
-FROM node:18-alpine as frontend
-
-WORKDIR /app
-
-COPY package.json package-lock.json ./
-RUN npm install
-
-COPY resources/ resources/
-COPY vite.config.js ./
-RUN npm run build
-
-
-# Etapa 2: PHP con Apache
+# Usa una imagen oficial de PHP con Apache y extensiones necesarias
 FROM php:8.2-apache
 
-# Instalar dependencias necesarias
+# Instala dependencias del sistema necesarias
 RUN apt-get update && apt-get install -y \
-    git curl unzip libzip-dev libpq-dev zip \
+    git unzip curl libpq-dev libzip-dev zip \
     && docker-php-ext-install pdo pdo_pgsql zip
 
-# Habilitar mod_rewrite
-RUN a2enmod rewrite
+# Instala Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Cambiar DocumentRoot a /var/www/html/public
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
-    sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Copiar todo el proyecto
+# Copia archivos de Laravel al contenedor
 COPY . /var/www/html
 
-# Entrar al directorio y ejecutar composer install
+# Establece directorio de trabajo
 WORKDIR /var/www/html
+
+# Instala dependencias PHP (Laravel)
 RUN composer install --no-dev --optimize-autoloader
 
-# Copiar assets frontend ya compilados
-COPY --from=frontend /app/public /var/www/html/public
+# Asigna permisos a directorios necesarios
+RUN chmod -R 775 storage bootstrap/cache && \
+    chown -R www-data:www-data storage bootstrap/cache
 
-# Permisos correctos
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
-
+# Expone puerto 80 para Render
 EXPOSE 80
 
+# Comando que se ejecutará al iniciar el contenedor
 CMD ["apache2-foreground"]
 
 
