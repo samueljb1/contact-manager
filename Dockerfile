@@ -1,37 +1,41 @@
-# Usa la imagen base de PHP-FPM 8.4
-FROM php:8.4-fpm
+# Etapa 1: Build assets
+FROM node:18-alpine as frontend
 
-# Instala dependencias necesarias para Laravel y Nginx
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm install
+COPY resources ./resources
+COPY vite.config.js ./
+RUN npm run build
+
+
+# Etapa 2: PHP + Composer
+FROM php:8.2-apache
+
+# Instalar extensiones necesarias
 RUN apt-get update && apt-get install -y \
-    nginx \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    curl \
-    git \
-    unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd \
-    && curl -sS https://getcomposer.org/installer | php \
-    && mv composer.phar /usr/local/bin/composer
+    git curl unzip libpq-dev libzip-dev libpng-dev libonig-dev libxml2-dev zip \
+    && docker-php-ext-install pdo pdo_pgsql zip
 
-# Configura el directorio de trabajo
-WORKDIR /var/www
+# Habilitar mod_rewrite
+RUN a2enmod rewrite
 
-# Copia el código de la aplicación al contenedor
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copiar la app
+WORKDIR /var/www/html
 COPY . .
 
-# Instala las dependencias de Composer (Laravel)
-RUN composer install --no-dev --optimize-autoloader
+# Copiar assets compilados del frontend
+COPY --from=frontend /app/public ./public
 
-# Copia el archivo de configuración de Nginx
-COPY ./nginx/default.conf /etc/nginx/sites-available/default
+# Permisos
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
-# Configura Nginx para escuchar en el puerto 80
+# Exponer el puerto
 EXPOSE 80
 
-# Configura permisos en las carpetas de Laravel
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-
-# Inicia Nginx y PHP-FPM
-CMD service nginx start && php-fpm
+CMD ["apache2-foreground"]
