@@ -38,5 +38,5 @@ services:
 databases:
   - name: contact-db
     databaseName: contact_manager
-    user: samuel_user
+    user: samuel
     plan: free
