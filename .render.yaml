@@ -12,7 +12,7 @@ services:
       - key: APP_KEY
         value: base64:TsvGEovbDYwxpY14aZVPiLFET+YWDrMOOUjXU76iYVA=
       - key: APP_URL
-        value: https://contact-manager-78x4.onrender.com
+        value: https://contact-manager-kklb.onrender.com
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
