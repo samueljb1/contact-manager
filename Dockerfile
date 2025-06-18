@@ -1,39 +1,35 @@
-# Usa una imagen oficial de PHP con Apache y extensiones necesarias 
+# Usa una imagen oficial de PHP con Apache y extensiones necesarias
 FROM php:8.2-apache
 
-# Instala dependencias del sistema necesarias
+# Instala dependencias necesarias del sistema
 RUN apt-get update && apt-get install -y \
     git unzip curl libpq-dev libzip-dev zip \
     && docker-php-ext-install pdo pdo_pgsql zip
 
-# Instala Composer
+# Instala Composer desde imagen oficial
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copia archivos del proyecto al contenedor
+# Copia los archivos del proyecto
 COPY . /var/www/html
 
-# Establece directorio de trabajo
+# Define el directorio de trabajo
 WORKDIR /var/www/html
 
-# Establece DocumentRoot a public/
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf && \
-    sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf && \
-    sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
-
-# Habilita módulo rewrite para Laravel
-RUN a2enmod rewrite
-
-# Instala dependencias PHP
+# Instala dependencias de Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Asigna permisos a directorios necesarios
+# Permisos necesarios para Laravel
 RUN chmod -R 775 storage bootstrap/cache && \
     chown -R www-data:www-data storage bootstrap/cache
 
-# Expone el puerto 80
+# Exponer el puerto para Apache
 EXPOSE 80
 
-# Comando de inicio
-CMD ["apache2-foreground"]
+# Comando que se ejecuta al arrancar el contenedor
+CMD php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan migrate --force && \
+    apache2-foreground
+
 
 

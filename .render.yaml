@@ -10,33 +10,19 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        generateValue: true
+        value: base64:Foct5J9KvFYAYSTQXVH0Qg8NJP0aBKvR1++IhD+XnjQ=
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        fromDatabase:
-          name: contact-db
-          property: host
+        value: dpg-d190enh5pdvs73dqdddg-a
       - key: DB_PORT
         value: 5432
       - key: DB_DATABASE
-        fromDatabase:
-          name: contact-db
-          property: database
+        value: contact_manager_db_vrp1
       - key: DB_USERNAME
-        fromDatabase:
-          name: contact-db
-          property: user
+        value: samuel
       - key: DB_PASSWORD
-        fromDatabase:
-          name: contact-db
-          property: password
+        value: ykG5mAxwTpodbV8mxRnko9gxiDP0XaCN
     ports:
       - port: 80
         targetPort: 80
-
-databases:
-  - name: contact-db
-    databaseName: contact_manager
-    user: samuel
-    plan: free
