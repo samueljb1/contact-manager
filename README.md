@@ -2,7 +2,7 @@ Contact Manager
 
 Aplicación full-stack desarrollada con **Laravel 12 + Inertia.js + React + Tailwind CSS**, que permite gestionar una agenda de contactos de forma moderna, rápida y visual. Incluye filtros en tiempo real, exportación a CSV, edición inline con validaciones, gráficas estadísticas y un diseño limpio y responsivo.
 
-##  Funcionalidades principales
+##Funcionalidades principales
 
 - CRUD completo de contactos
 - Filtro por nombre y provincia (insensible a mayúsculas)
@@ -13,7 +13,7 @@ Aplicación full-stack desarrollada con **Laravel 12 + Inertia.js + React + Tail
 - Paginación con filtros preservados
 - Autenticación y control de acceso
 
-##  Tecnologías usadas
+##Tecnologías usadas
 
 Backend    
 Laravel 12
@@ -29,7 +29,7 @@ Laravel Breeze
 Inertia Adapter
 
 
-##  Requisitos previos
+##Requisitos previos
 
 - PHP 8.2 o superior
 - Composer
@@ -37,7 +37,7 @@ Inertia Adapter
 - PostgreSQL instalado y configurado
 - Git
 
-##  Instalación local paso a paso
+##Instalación local paso a paso
 
 1. Clona el repositorio
 
@@ -83,21 +83,4 @@ Abre en el navegador:
 http://127.0.0.1:8000
 
 Regístrate y crea tu usuario.
-
-Funcionalidades implementadas:
-
-Gestión de contactos
-Formulario para crear
-Eliminación con confirmación
-Validación visual al editar en línea
-Filtros inteligentes
-Buscar por nombre
-Filtrar por provincia
-Borrar filtros y restaurar vista original
-Exportar CSV
-Exporta los contactos que coinciden con los filtros activos
-Archivo .csv descargable con los datos visibles
-Visualización de estadísticas
-Gráfico de barras con cantidad de contactos por provincia usando Chart.js
-
 
